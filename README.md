@@ -11,6 +11,7 @@ Generate grade school math word problems procedurally using python scripts.
 5. Variations in problems can be finely controlled. Eg, we can easily generate problems with double or 10x the complexity.
 6. Problem diversity is better with procedural generation than simply asking the LLM.
 7. Procedural generation allows finer grained control of the dataset.
+8. These problems can also be given to human students. Note that some problems might be difficult/annoying for human students to parse. Example: You bought twice as many cakes on Monday as Tuesday. You bought 20% more cakes on Tuesday than Wednesday. You bought 10 cakes on Wednesyday. How many cakes in total did you buy?
 
 ## Analysis of GSM problems
 [Analysis](Analysis.md)
