@@ -44,6 +44,12 @@ Note that, relations of unknown quantites will cause the problem to become an al
 
 **Not suggested:** Kelly bought some apples, twice as many oranges, and two pears. If she bought 20 fruits, how many apples did she buy?
 
+## Minor variation: Inverse relations
+
+**Example:** Jake bought twice as many fruits as cakes. He bought 10 fruits.
+
+How the relation "twice" needs to be inverted to "half" to solve the problem.
+
 # Variation: Extra information
 The Apple paper suggests adding some extraneous information trips up some LLMS and they include the info in the calculations. We can do this in various ways:
 
