@@ -97,3 +97,20 @@ The goal is to find the total count or difference of some subgroup.
 
 Example: A school has 100 students. Section A has 60% of the students while section B has the rest. 40% students in section A are male, 30% students in section B are female. How many more girls does section A have than section B?
 
+# Problem type: Parallel sum of line items
+
+Each line item involves some amount of item 1 and some other quantity of item 2. Eventually, we must do a comparison (total, difference or ratio) of the total (or missing quantity) of the two items.
+
+**Example:** Anya buys 2 eggs and 3 oranges. Bolo buys 8 eggs and 2 oranges. How many times more eggs do they have in total, than oranges?
+
+All previous line item problem variations can be applied.
+
+# Problem type: Rectangular area
+
+This is pretty much the product variation from above. You are given length and breadth of a field/garden/yard/school/house etc. You may have to find the perimeter or area. You may be given another quantity per unit area or length. You may have to find the total quantity, sometimes for multiple rectangles.
+
+Example: A garden has length 30 feet and width 20 feet. Another garden has the same of 50 and 20 feet. If a plant needs 10sqft area to be healthy, How many plants are there in those 2 gardens?
+
+Example: A field has length 30 feet and width 20 feet. It has a fence of height 6 feet. If it costs $3 to paint the fence per sqft , how much will it cost to paint the fence ?
+
+(How far can we go? garden>area>tree per sqft>twigs per tree? leaves per twig ... so on)
