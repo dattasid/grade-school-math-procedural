@@ -9,6 +9,8 @@ Generate grade school math word problems procedurally using python scripts.
 3. A tremendous number of problems can be potentially procedurally generated. While repetitive to humans, the variation in names, numbers, items, fact ordering etc might be able to improve training data.
 4. LLMs can be tested on unique procedurally generated problems, similar to ARC.
 5. Variations in problems can be finely controlled. Eg, we can easily generate problems with double or 10x the complexity.
+6. Problem diversity is better with procedural generation than simply asking the LLM.
+7. Procedural generation allows finer grained control of the dataset.
 
 ## Analysis of GSM problems
 [Analysis](Analysis.md)
