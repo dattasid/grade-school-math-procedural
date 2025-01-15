@@ -1,17 +1,18 @@
-# Example of 'normal' question.
+### Example of 'normal' question.
 
-### Data presentation varies to test the model's attention.
+_Data presentation varies to test the model's attention._
 
-On Monday, Hanh bought 0 less Mushroom Pizzas than Tuesday for two times the price as Tuesday each.
-Hanh bought 44 Mushroom Pizzas on Tuesday for six dollars zero cents each.
-Hanh bought one half as many Mushroom Pizzas as Monday for five times the price as Thursday per item on Wednesday.
-On Thursday, Hanh paid 150% the price as Monday per item for 1/2th the Mushroom Pizzas as Tuesday.
-Hanh paid double the price as Monday per item for 2 times as many Mushroom Pizzas as Monday on Friday.
-What was the total amount Hanh spent?
+On Monday, Hanh bought 0 less Mushroom Pizzas than Tuesday for two times the price as Tuesday each.<br>
+Hanh bought 44 Mushroom Pizzas on Tuesday for six dollars zero cents each.<br>
+Hanh bought one half as many Mushroom Pizzas as Monday for five times the price as Thursday per item on Wednesday.<br>
+On Thursday, Hanh paid 150% the price as Monday per item for 1/2th the Mushroom Pizzas as Tuesday.<br>
+Hanh paid double the price as Monday per item for 2 times as many Mushroom Pizzas as Monday on Friday.<br>
+What was the total amount Hanh spent?<br>
+
 ---
 
-### Example answer, can be used for debugging.
-Note that the answer assumes the model can decide which variables have all their dependencies determined and hence can be calculated right now.
+_Example answer, can be used for debugging._
+_Note that the answer assumes the model can decide which variables have all their dependencies determined and hence can be calculated right now._
 
 
 Let us think step by step.
