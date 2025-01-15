@@ -9,9 +9,10 @@ def r_chance(rand:random.Random, chance:float):
   return rand.random() < chance
 
 def number_to_words(n:int):
-    """Convert a positive integer (up to 999) to its written form."""
+    """Convert a positive integer (up to 99999) to its written form."""
     if n < 0 or n > 9999:
-        return "Number out of range. Please enter a number between 1 and 999: |"+str(n)+"|"
+        # raise "Number out of range. Please enter a number between 1 and 999: |"+str(n)+"|"
+      return str(n)
     if n==0: return "zero"
 
     units = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
