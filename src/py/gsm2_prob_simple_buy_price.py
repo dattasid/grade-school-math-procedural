@@ -42,7 +42,7 @@ def prob_simple_buy_price(N=3,
     "$name paid $price_clause per item for $quantity_clause on $time.",
 
     "On $time, $name $verb_past $quantity_clause for $price_clause each.",
-    "On $time, $name paid $price_clause for $quantity_clause per item.",
+    "On $time, $name paid $price_clause per item for $quantity_clause.",
 
     "$name $verb_past $quantity_clause on $time. $name paid $price_clause each."
     "$name paid $price_clause per item on $time. $name $verb_past $quantity_clause."
