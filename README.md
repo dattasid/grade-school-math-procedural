@@ -4,6 +4,23 @@ Generate grade school math word problems procedurally.
 
 [Example](datasets/examples/price_normal.md)
 
+# How to run:
+
+Generate 10 problems with 5 rows:
+```
+python src/py/generate.py --N 5 --count 10 > file.jsonl
+```
+
+Generate 10 problems with 10 rows, in easy to read format:
+```
+python src/py/generate.py --N 5 --count 10 --easy-read > file.jsonl
+```
+
+Generate 1 problem with 5 rows, to read from stdout:
+```
+python src/py/generate.py --N 5 --count 1 --dump
+```
+
 ## Problem type: Buying items with price and quantity.
 
 1. Problem consists of a series of N statements, where quantity and price are given for purchase of a item each day. Increasing number of days increases complexity.
