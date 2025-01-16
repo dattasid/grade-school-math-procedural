@@ -13,7 +13,7 @@ python src/py/generate.py --N 5 --count 10 > file.jsonl
 
 Generate 10 problems with 10 rows, in easy to read format:
 ```
-python src/py/generate.py --N 5 --count 10 --easy-read > file.jsonl
+python src/py/generate.py --N 10 --count 10 --easy-read > file.jsonl
 ```
 
 Generate 1 problem with 5 rows, to read from stdout:
