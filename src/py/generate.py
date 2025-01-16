@@ -12,15 +12,18 @@ parser.add_argument("--count", type=int, default=10)
 parser.add_argument("--dump", action="store_true", default=False)
 args = parser.parse_args()
 
-print(json.dumps({"file_metadata":{
-  "N": args.N,
-  "type": "simple_buy_for_price",
-  "easy-read": args.easy_read,
-  "count": args.count
-}}))
+if not args.dump:
+  print(json.dumps({"file_metadata":{
+    "N": args.N,
+    "type": "simple_buy_for_price",
+    "easy-read": args.easy_read,
+    "count": args.count
+  }}))
+
 for i in range(args.count):
   p_json = prob_simple_buy_price(N=args.N, clear_lang=args.easy_read)
-  print(json.dumps(p_json))
-  if args.dump:
-    print(p_json["question"], "\n---\n", p_json["answer"])
+  if not args.dump:
+    print(json.dumps(p_json))
+  else:
+    print("Question:\n", p_json["question"], "\nAnswer:\n", p_json["answer"])
 
