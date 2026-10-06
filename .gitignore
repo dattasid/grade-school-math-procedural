@@ -1,0 +1,13 @@
+# Secrets
+OR_API_KEY
+
+# Python / Node
+__pycache__/
+node_modules/
+
+# Scratch and archives
+tmp/
+*.zip
+
+# Run logs (full model responses); summary.csv is kept
+src/py/runs/**/*.jsonl
