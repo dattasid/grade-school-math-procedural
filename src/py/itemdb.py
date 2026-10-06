@@ -66,6 +66,9 @@ def pickItemGroup(rng:Random, allowed_cat:List[str]):
 ITEMDB:Dict[str, "ItemSet"] = {}
 class ItemSet:
   """Shuffles on init, provides items one by one"""
+  # For time series: "on Monday" / "That day". Override per series.
+  time_prep = "on"
+  same_time = "That day"
   def __init__(self, id:str, categories:List[str], items:List[str]=[]):
     self.id = id
     self.grp = ""
@@ -81,6 +84,15 @@ class ItemSet:
     self.idx = -1
     self.work_items = self.items[:]
     rng.shuffle(self.work_items)
+
+  def time_vars(self, t:str):
+    """Template values for one time value t of a time series."""
+    return {
+      "time": t,                                       # Monday / June / 3 June
+      "on_time": f"{self.time_prep} {t}",              # on Monday / in June
+      "On_time": f"{self.time_prep.capitalize()} {t}", # On Monday / In June
+      "same_time": self.same_time,                     # That day / That month
+    }
 
   def getItem(self):
     self.idx += 1
@@ -99,6 +111,10 @@ class ItemsWOD(ItemSet):
 ItemsWOD()
 
 class ItemsMOD(ItemSet):
+  # Bare month names: "in June" / "That month". Dates are ItemsDates.
+  time_prep = "in"
+  same_time = "That month"
+
   def __init__(self):
     super().__init__("time_month_days", ["time"])
     self.months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -115,6 +131,63 @@ class ItemsMOD(ItemSet):
 
 ItemsMOD()
 
+class ItemsDates(ItemSet):
+  """Consecutive dates within one month: 3 June, 4 June, ..."""
+  MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  LEN = 12  # series length; enough for N <= 12 (longer N uses ordinal days)
+
+  def __init__(self):
+    super().__init__("time_dates", ["time"])
+    self.items = [f"{d} June" for d in range(1, self.LEN + 1)]  # placeholder; begin() picks month/start
+    self.work_items = self.items[:]
+
+  def begin(self, rng:Random):
+    self.idx = -1
+    month = rng.choice(self.MONTHS)
+    start = rng.randint(1, 28 - self.LEN + 1)
+    self.work_items = [f"{d} {month}" for d in range(start, start + self.LEN)]
+
+ItemsDates()
+
+_ONES = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+         "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen",
+         "seventeen", "eighteen", "nineteen"]
+_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+_ORD_IRREG = {"one": "first", "two": "second", "three": "third", "five": "fifth",
+              "eight": "eighth", "nine": "ninth", "twelve": "twelfth"}
+
+def _cardinal(n):
+  if n < 20:   return _ONES[n]
+  if n < 100:  return _TENS[n//10] if n%10==0 else f"{_TENS[n//10]}-{_ONES[n%10]}"
+  if n < 1000:
+    rest = n % 100
+    return f"{_ONES[n//100]} hundred" + (f" and {_cardinal(rest)}" if rest else "")
+  rest = n % 1000
+  return f"{_ONES[n//1000]} thousand" + (f" {_cardinal(rest)}" if rest else "")
+
+def _ordinal(n):
+  c = _cardinal(n)
+  last = c.replace("-", " ").split()[-1]
+  if last in _ORD_IRREG:   suf = _ORD_IRREG[last]
+  elif last.endswith("y"): suf = last[:-1] + "ieth"
+  else:                    suf = last + "th"
+  if c == last: return suf
+  return c[:-len(last)] + suf
+
+MAX_ORDINAL_N = 9999
+
+class ItemsOrdinalDays(ItemSet):
+  def __init__(self):
+    super().__init__("time_ordinal_days", ["time"])
+    self.items = [f"the {_ordinal(n)} day" for n in range(1, MAX_ORDINAL_N + 1)]
+    self.work_items = self.items[:]
+
+  def begin(self, rng:Random):
+    self.idx = -1
+    self.work_items = self.items[:]  # always in order
+
+ItemsOrdinalDays()
+
 def preProcess():
   for r in ITEMS:
     rule = ItemSet(r["id"], r["category"])
@@ -128,6 +201,8 @@ def ItemDB_reset(rng:Random):
     r.begin(rng)
 
 def ItemDB_getTimeSeries(rng:Random, N=3):
+  if N > 12:
+    return ITEMDB["time_ordinal_days"]
   t_grps:List[ItemSet] = []
   for r in ITEMDB.values():
     if "time" in r.categories and N <= len(r.items):
@@ -136,6 +211,7 @@ def ItemDB_getTimeSeries(rng:Random, N=3):
   return rng.choice(t_grps)
 
 TIME_SHORT = {
+  **{f"the {_ordinal(n)} day": f"Day {n}" for n in range(1, MAX_ORDINAL_N + 1)},
   "Monday": "Mon",
   "Tuesday": "Tue",
   "Wednesday": "Wed",

@@ -127,6 +127,35 @@ def replace_name_with_pronoun(q_lines:List[str], name:str, pronoun:str):
       seen_name = True
       continue
 
+NONCE_C = "bdfgklmnprtvz"
+NONCE_V = "aeiou"
+# Real words that fit the CVCVC pattern; never use these as nonce words.
+NONCE_BLOCK = {"lemon", "melon", "camel", "robin", "tulip", "salad", "rapid", "vivid", "timid", "lilac",
+  "radar", "rotor", "tenor", "manor", "minor", "molar", "lunar", "vapor", "tumor", "humor", "rumor",
+  "rival", "panel", "fatal", "metal", "petal", "pedal", "medal", "naval", "total", "tidal", "focal",
+  "local", "vocal", "legal", "regal", "papal", "dotal", "modal", "nodal", "tonal", "zonal", "decal",
+  "devil", "lapel", "level", "model", "novel", "bagel", "label", "lever", "liver", "fever", "never",
+  "river", "tiger", "pilot", "digit", "debit", "limit", "merit", "remit", "vomit", "baron", "talon",
+  "felon", "demon", "lemur", "radon", "venom", "nomad", "kebab", "botox", "begin", "rabid", "valid",
+  "tepid", "lurid", "livid", "fetid", "modem", "totem", "denim", "tenet", "rivet", "comet", "linen",
+  "token", "taken", "woken", "faker", "maker", "taker", "baker", "biker", "poker", "toner", "diner",
+  "liner", "miner", "timer", "later", "water", "paper", "piper", "taper", "rider", "cider", "rigid",
+  "gamut", "kapok", "lotus", "bogus", "venus", "fokus", "kudos", "pagan", "rodeo", "zebra", "ninja"}
+
+def make_nonce(rng:random.Random, used:set, capital=False)->str:
+  """Made-up CVCVC word (e.g. 'Bodak') not in `used` and not a real word."""
+  while True:
+    w = "".join(rng.choice(NONCE_C if i % 2 == 0 else NONCE_V) for i in range(5))
+    if w not in used and w not in NONCE_BLOCK:
+      used.add(w)
+      return w.capitalize() if capital else w
+
+def nonce_substitute(text:str, mapping:Dict[str, str])->str:
+  """Whole-word replace every key of mapping, longest key first ('the twenty-first day' before 'the first day')."""
+  keys = sorted(mapping, key=len, reverse=True)
+  pat = re.compile(r"\b(" + "|".join(re.escape(k) for k in keys) + r")\b")
+  return pat.sub(lambda m: mapping[m.group(1)], text)
+
 def cleanup_str(s:str)->str:
   s = re.sub(r' +', ' ', s)
   s = re.sub(r'\.+', '.', s)

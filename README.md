@@ -43,6 +43,16 @@ Generate 1 problem with 5 rows, to read from stdout:
 python src/py/generate.py --N 5 --count 1 --dump
 ```
 
+Evaluate a model via [OpenRouter](https://openrouter.ai) (API key in a file named `OR_API_KEY`; logs and cost go to `src/py/runs/`):
+```
+python src/py/eval.py file.jsonl -m z-ai/glm-5.3-flash --reasoning-effort high --max-tokens 60000 -b 10
+```
+
+Rebuild the charts from the run logs:
+```
+python src/py/report.py
+```
+
 ## Problem type: Buying items with price and quantity.
 
 1. Problem consists of a series of N statements, where quantity and price are given for purchase of an item each day. Increasing number of days increases complexity.

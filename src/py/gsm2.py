@@ -24,12 +24,12 @@ def number_to_words(n:int):
 
     # Handle thousands
     if n >= 1000:
-        words.append(units[n // 1000] + " Thousand")
+        words.append(units[n // 1000] + " thousand")
         n %= 1000
 
     # Handle hundreds
     if n >= 100:
-        words.append(units[n // 100] + " Hundred")
+        words.append(units[n // 100] + " hundred")
         n %= 100
 
     # Handle tens and teens
@@ -45,6 +45,20 @@ def number_to_words(n:int):
 
     return " ".join(words)
 
+def ordinal_words(n):
+    """3 -> third, 12 -> twelfth, 20 -> twentieth, 25 -> twenty fifth."""
+    words = number_to_words(n).split()
+    irregular = {"one": "first", "two": "second", "three": "third", "five": "fifth",
+                 "eight": "eighth", "nine": "ninth", "twelve": "twelfth"}
+    last = words[-1]
+    if last in irregular:
+      words[-1] = irregular[last]
+    elif last.endswith("y"):
+      words[-1] = last[:-1] + "ieth"
+    else:
+      words[-1] = last + "th"
+    return " ".join(words)
+
 def fraction_to_words(numerator, denominator):
     """Convert a simple fraction (int/int) to its written form."""
 
@@ -58,13 +72,13 @@ def fraction_to_words(numerator, denominator):
 
     # For proper fractions
     numerator_words = number_to_words(numerator)
-    if denominator < 6:
-      denominator_words = {1: "one", 2: "half", 3: "third", 4: "fourth", 5: "fifth"}.get(denominator, "ILLEGAL")
-    else:
-      denominator_words = number_to_words(denominator) + "th"
+    if len(numerator_words.split())>1 or len(number_to_words(denominator).split())>1:
+      return f"{numerator_words} over {number_to_words(denominator)}"
 
-    if len(numerator_words.split())>1 or len(denominator_words.split())>1:
-      return f"{numerator_words} over {denominator_words}"
+    if denominator == 2:
+      denominator_words = "half" if numerator == 1 else "halves"
+    else:
+      denominator_words = ordinal_words(denominator) + ("s" if numerator > 1 else "")
 
     return f"{numerator_words} {denominator_words}"
     # TODO:
@@ -209,10 +223,10 @@ class NumMulRel(NumRel):
       s = tostr(self.n)
     else:
       if easy:
-        return f"{self.n}/{self.d} th the price$mult_preposition"
+        return f"{self.n}/{self.d} times the price$mult_preposition"
       strc = [
-        lambda n, d: f"{n}/{d}th the price",
-        lambda n, d: f"{n}/{d}th as much",
+        lambda n, d: f"{n}/{d} times the price",
+        lambda n, d: f"{n}/{d} times as much",
         lambda n, d: f"{fraction_to_words(n, d)} the price",
         lambda n, d: f"{fraction_to_words(n, d)} as much",
       ]
@@ -245,10 +259,10 @@ class NumMulRel(NumRel):
       return s+" $item_p$mult_preposition"
     else:
       if easy:
-        return f"{self.n}/{self.d} th the $item_p$mult_preposition"
+        return f"{self.n}/{self.d} times the $item_p$mult_preposition"
       strc = [
-        lambda n, d: f"{n}/{d}th the",
-        lambda n, d: f"{n}/{d}th as many",
+        lambda n, d: f"{n}/{d} times the",
+        lambda n, d: f"{n}/{d} times as many",
         lambda n, d: f"{fraction_to_words(n, d)} the",
         lambda n, d: f"{fraction_to_words(n, d)} as many",
       ]

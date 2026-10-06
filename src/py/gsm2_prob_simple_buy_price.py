@@ -3,7 +3,8 @@ from itemdb import getItemList, getOneItem, pickItemGroup, ItemDB_reset, ItemDB_
 from random import Random
 from typing import List, Dict, cast
 from lang import FEMALE_NAMES, MALE_NAMES, VERBS_HT, replace_variables, getPlural, \
-  join_with_and, replace_name_with_pronoun, num_to_price, cleanup_str, ShuffledList
+  join_with_and, replace_name_with_pronoun, num_to_price, cleanup_str, ShuffledList, \
+  make_nonce, nonce_substitute
 
 rand = Random()
 
@@ -27,28 +28,27 @@ def prob_simple_buy_price(N=3,
       The relations are given in such a way that all amounts can be derived. Algebra (declaring x) is not needed.
   """
 
-  if N > 12:
-    raise ValueError("N must be less than <= 12 for now.")
-    #TODO: Implement Time series that is Days of Month eg 1 Jan, 2 Jan etc
+  if N > 9999:
+    raise ValueError("N must be <= 9999.")
 
   ST_INITIAL = ShuffledList(rand,
           "$name had \\$$m_count in the start.",
           "$name started with \\$$m_count.",
         )
   ST_BASE = ShuffledList(rand,
-    "$name $verb_past $quantity_clause on $time for $price_clause each.",
-    "$name $verb_past $quantity_clause for $price_clause per item on $time.",
-    "$name paid $price_clause each on $time for $quantity_clause.",
-    "$name paid $price_clause per item for $quantity_clause on $time.",
+    "$name $verb_past $quantity_clause $on_time for $price_clause each.",
+    "$name $verb_past $quantity_clause for $price_clause per item $on_time.",
+    "$name paid $price_clause each $on_time for $quantity_clause.",
+    "$name paid $price_clause per item for $quantity_clause $on_time.",
 
-    "On $time, $name $verb_past $quantity_clause for $price_clause each.",
-    "On $time, $name paid $price_clause per item for $quantity_clause.",
+    "$On_time, $name $verb_past $quantity_clause for $price_clause each.",
+    "$On_time, $name paid $price_clause per item for $quantity_clause.",
 
-    "$name $verb_past $quantity_clause on $time. $name paid $price_clause each."
-    "$name paid $price_clause per item on $time. $name $verb_past $quantity_clause."
+    "$name $verb_past $quantity_clause $on_time. $same_time, $name paid $price_clause each.",
+    "$name paid $price_clause per item $on_time. $same_time, $name $verb_past $quantity_clause."
   )
   ST_BASE_CLEAR = ShuffledList(rand,
-    "On $time, $name $verb_past $quantity_clause. On $time, $name paid $price_clause per $item_s.",
+    "$On_time, $name $verb_past $quantity_clause. $On_time, $name paid $price_clause per $item_s.",
   )
   # He bought thrice as many apples on Monday as [he bought] on Tuesday, for twice the price he paid on Wednesday.
   # ST_REL_T  = "$name $verb_past $quantity_clause for $price_clause"
@@ -62,8 +62,8 @@ def prob_simple_buy_price(N=3,
   # ...3x the apples on Monday as Tuesday
   ST_P_CLAUSE_REL = "$price_rel_str $target_time"
 
-  ST_BASE_QUANTITY = "On $time, $name $verb_past $quantity_clause."
-  ST_BASE_PRICE = "On $time, $name paid $price_clause per item." # Note we can change item to $item_s
+  ST_BASE_QUANTITY = "$On_time, $name $verb_past $quantity_clause."
+  ST_BASE_PRICE = "$On_time, $name paid $price_clause per item." # Note we can change item to $item_s
 
   ST_TOT    = "$name spent a total of $total_value."
 
@@ -76,32 +76,32 @@ def prob_simple_buy_price(N=3,
     "How much did $name's total expenses amount to?"
   )
   ST_Q_QUANTITY = ShuffledList(rand,
-    "How many $item_p did $name buy on $time?",
-    "What quantity of $item_p did $name purchase on $time?",
-    "How much of $item_p did $name acquire on $time?",
-    "On $time, how many $item_p were bought by $name?",
-    "How many $item_p did $name get on $time?",
-    "What was the number of $item_p that $name bought on $time?"
+    "How many $item_p did $name buy $on_time?",
+    "What quantity of $item_p did $name purchase $on_time?",
+    "How much of $item_p did $name acquire $on_time?",
+    "$On_time, how many $item_p were bought by $name?",
+    "How many $item_p did $name get $on_time?",
+    "What was the number of $item_p that $name bought $on_time?"
   )
   ST_Q_PRICE = ShuffledList(rand,
-    "How much did $name spend per $item_s on $time?",
-    "What was the total amount $name spent per $item_s on $time?",
-    "How much money did $name allocate to each $item_s on $time?",
+    "How much did $name spend per $item_s $on_time?",
+    "What was the total amount $name spent per $item_s $on_time?",
+    "How much money did $name allocate to each $item_s $on_time?",
     "What did $name spend per $item_s for $time?",
-    "Can you tell me the amount $name spent on each $item_s on $time?",
+    "Can you tell me the amount $name spent on each $item_s $on_time?",
     "How much did $name pay per $item_s throughout $time?"
   )
   # He bought thrice as many apples as bananas, for twice the price he paid on Wednesday.
 
   ST_PRE_SHORT = "$name $verb_past "
   ST_BASE_SHORT = "$rel_str"
-  ST_REL_SHORT  = "$rel_str on $time as $target_time"
+  ST_REL_SHORT  = "$rel_str $on_time as $target_time"
   ST_UKNOWN_SHORT = rand.choice(["a few $item_p", "some $item_p"])
 
-  ST_SOL_Q_BASE = "$verb_past_p on $time: $count"
-  ST_SOL_P_BASE = "Price on $time: $count"
-  ST_SOL_Q_REL =  "Quantity on $time: $target_time$mult = $target_count$mult = $count"
-  ST_SOL_P_REL =  "Price on $time: $target_time$mult = $target_count$mult = $count"
+  ST_SOL_Q_BASE = "$verb_past_p $on_time: $count"
+  ST_SOL_P_BASE = "Price $on_time: $count"
+  ST_SOL_Q_REL =  "Quantity $on_time: $target_time$mult = $target_count$mult = $count"
+  ST_SOL_P_REL =  "Price $on_time: $target_time$mult = $target_count$mult = $count"
 
   ST_SOL_Q_BASE_S = "Q_$time = $count"
   ST_SOL_P_BASE_S = "P_$time = $count"
@@ -110,7 +110,7 @@ def prob_simple_buy_price(N=3,
 
 
 
-  ST_SOL_MUL = "Spent on $time: $q_count * $p_count = $count"
+  ST_SOL_MUL = "Spent $on_time: $q_count * $p_count = $count"
 
   ST_SOL_KNOWN_INITIAL = "Initial: $count"
   ST_SOL_KNOWN_TOT = "Final total: $count"
@@ -118,10 +118,10 @@ def prob_simple_buy_price(N=3,
 
   ST_SOL_TOT = "Total: $line_count_join = \\$$count\n#### $count"
   ST_SOL_ITEM = "Total except $time: $line_count_join = \\$$known_count"
-  ST_SOL_ITEM_PLUS = "Spent on $time: \\$$total_count - \\$$known_count = \\$$count"
-  # ST_SOL_ITEM_MINUS = "$verb_past_p on $time: $known_count-$total_count = $item_count\n#### $item_count"
-  ST_SOL_ITEM_Q = "Quantity on $time: $amount / \\$$price = $count\n#### $count"
-  ST_SOL_ITEM_P = "Price on $time: $amount / $count = \\$$price\n#### $price"
+  ST_SOL_ITEM_PLUS = "Spent $on_time: \\$$total_count - \\$$known_count = \\$$count"
+  # ST_SOL_ITEM_MINUS = "$verb_past_p $on_time: $known_count-$total_count = $item_count\n#### $item_count"
+  ST_SOL_ITEM_Q = "Quantity $on_time: $amount / \\$$price = $count\n#### $count"
+  ST_SOL_ITEM_P = "Price $on_time: $amount / $count = \\$$price\n#### $price"
 
   ST_RESTATE_PREFIX = "Let us think step by step.\nIn this problem we see there the person buying only one type of item. " \
                   "The quantity and price varies over time. Let us denote this by Q_day and P_day.\n" \
@@ -153,9 +153,10 @@ def prob_simple_buy_price(N=3,
   verb_minus = VERBS_HT[activity_type["verb"][1]] # type: ignore
   item = itemgrp.work_items[0]
 
-  time_series = ItemDB_getTimeSeries(rand, N=N).work_items[:N]
+  time_grp = ItemDB_getTimeSeries(rand, N=N)
   if "food" in itemgrp.categories and N <= 7:
-    time_series = ITEMDB["time_wod"].work_items[:N]
+    time_grp = ITEMDB["time_wod"]
+  time_series = time_grp.work_items[:N]
 
   if r_chance(rand, 0.5):
     name = rand.choice(MALE_NAMES)
@@ -203,6 +204,7 @@ def prob_simple_buy_price(N=3,
   prices = prices[:-1] # without total
 
   question_lines:List[str] = []
+  split_lines:List[str] = []   # one fact per line: quantity and price of a day stated separately
   restate_lines:List[str] = []
   solution_lines:List[str] = []
 
@@ -222,7 +224,7 @@ def prob_simple_buy_price(N=3,
         }
     vars_1["count"] = str(quantity.val)
     vars_1["rel_str"] = quantity.rel.disp_str(rand, easy=clear_lang)
-    vars_1["time"] = time_series[idx]
+    vars_1.update(time_grp.time_vars(time_series[idx]))
     vars_1["price_rel_str"] = prices[idx].rel.disp_str(rand, easy=clear_lang)
 
     # print(prices[idx].rel.is_price, prices[idx].rel.disp_str(rand))
@@ -271,6 +273,13 @@ def prob_simple_buy_price(N=3,
     s = cleanup_str(s)
     question_lines.append(s)
 
+    if quantity.known:
+      split_lines.append(cleanup_str(replace_variables(replace_variables(ST_BASE_QUANTITY, vars_1), vars_1)))
+    if the_price.known:
+      split_lines.append(cleanup_str(replace_variables(replace_variables(ST_BASE_PRICE, vars_1), vars_1)))
+
+  n_day_lines = len(question_lines)   # lines after this are the total and the question
+
   if unknown_type != "total":
     vars_1 = {**vars,
       "total_value": price_to_words_rand(total_spent, rand),
@@ -287,7 +296,7 @@ def prob_simple_buy_price(N=3,
   elif not unknown_amt:
     raise Exception("No Unknown p/q")
   else:
-    vars["time"] = time_series[unknown_amt.line_idx]
+    vars.update(time_grp.time_vars(time_series[unknown_amt.line_idx]))
     if unknown_type == "quantity":
       s = replace_variables(ST_Q_QUANTITY.next(), vars)
       # print("How many $item_p did $name buy on ?"+time_series[unknown_amt.line_idx])
@@ -343,7 +352,7 @@ def prob_simple_buy_price(N=3,
       if line.known and not line.ref:
         exact_known_q.add(line.line_idx)
         s = replace_variables(ST_SOL_Q_BASE_S, {**vars, 
-                "time": time_series[line.line_idx],
+                **time_grp.time_vars(time_series[line.line_idx]),
                 "count": str(line.val)})
         s = cleanup_str(s)
         solution_lines.append(s)
@@ -360,7 +369,7 @@ def prob_simple_buy_price(N=3,
           exact_known_q.add(line.line_idx)
           new_this_time += 1
           s = replace_variables(ST_SOL_Q_REL_S, {**vars, 
-                "time": time_series[line.line_idx],
+                **time_grp.time_vars(time_series[line.line_idx]),
                 "count": str(line.val),
                 
                 "target_time": time_series[line.ref.line_idx],
@@ -377,7 +386,7 @@ def prob_simple_buy_price(N=3,
       if price.known and not price.ref:
         exact_known_p.add(price.line_idx)
         s = replace_variables(ST_SOL_P_BASE_S, {**vars, 
-                "time": time_series[price.line_idx],
+                **time_grp.time_vars(time_series[price.line_idx]),
                 "count": num_to_price(price.val)})
         s = cleanup_str(s)
         solution_lines.append(s)
@@ -392,7 +401,7 @@ def prob_simple_buy_price(N=3,
           exact_known_p.add(price.line_idx)
           new_this_time += 1
           s = replace_variables(ST_SOL_P_REL_S, {**vars, 
-                "time": time_series[price.line_idx],
+                **time_grp.time_vars(time_series[price.line_idx]),
                 "count": num_to_price(price.val),
                 
                 "target_time": time_series[price.ref.line_idx],
@@ -412,7 +421,7 @@ def prob_simple_buy_price(N=3,
           continue
         mult_count = num_to_price(quantities[i].val * prices[i].val)
         s = replace_variables(ST_SOL_MUL, {**vars,
-                "time": time_series[i],
+                **time_grp.time_vars(time_series[i]),
                 "q_count": str(quantities[i].val),
                 "p_count": "$"+num_to_price(prices[i].val),
                 "count": "$"+mult_count,
@@ -434,9 +443,9 @@ def prob_simple_buy_price(N=3,
       else:
         if not unknown_amt:
           raise Exception("No Unknown p/q")
-        vars["time"] = time_series[unknown_amt.line_idx]
-        s = replace_variables(ST_SOL_ITEM, {**vars, 
-                  "known_count": num_to_price(total_spent),
+        vars.update(time_grp.time_vars(time_series[unknown_amt.line_idx]))
+        s = replace_variables(ST_SOL_ITEM, {**vars,
+                  "known_count": num_to_price(known_spent),
                   "line_count_join": line_count_join})
         s = cleanup_str(s)
         solution_lines.append(s)
@@ -467,5 +476,34 @@ def prob_simple_buy_price(N=3,
         solution_lines.append(s)
         # print(s)
 
-  return {"question": "\n".join(question_lines),
-         "answer": "\n".join(restate_lines + solution_lines)}
+  # Presentation variants of the same problem (same numbers, same answer):
+  #   question           - one line per day, in day order
+  #   question_shuffled  - the same day lines in random order
+  #   question_split     - quantity and price of each day as separate lines, all shuffled
+  # The total line and the question always stay at the end. The solution stays in day order.
+  # A separate RNG keeps the main rand sequence unchanged.
+  prand = Random(rand.getrandbits(64))
+  tail = question_lines[n_day_lines:]
+  shuffled = question_lines[:n_day_lines]
+  prand.shuffle(shuffled)
+  prand.shuffle(split_lines)
+
+  # Nonce versions of each variant: the name, the item and every time label replaced by made-up
+  # CVCVC words (Bodak bought 3 fenubs on Tavim ...). Same numbers, same answer. Tests whether the
+  # familiar surface (real names, weekdays, pizzas) matters, e.g. from training on this generator.
+  used:set = set()
+  nonce_item = make_nonce(prand, used)
+  nonce_map = {name: make_nonce(prand, used, capital=True),
+               getPlural(item): nonce_item + "s",
+               item: nonce_item,
+               itemgrp.grp: make_nonce(prand, used) + "s"}
+  for t in time_series:
+    nonce_map[t] = make_nonce(prand, used, capital=True)
+
+  variants = {"question": "\n".join(question_lines),
+              "question_shuffled": "\n".join(shuffled + tail),
+              "question_split": "\n".join(split_lines + tail)}
+  for k, q in list(variants.items()):
+    variants[k + "_nonce"] = nonce_substitute(q, nonce_map)
+
+  return {**variants, "answer": "\n".join(restate_lines + solution_lines)}
