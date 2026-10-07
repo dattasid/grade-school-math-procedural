@@ -17,7 +17,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 HERE = Path(__file__).resolve().parent
-RUN_DIRS = ["charts_v1", "variants_v1", "nonce_v1", "acc_v1"]
+RUN_DIRS = ["charts_v1", "variants_v1", "nonce_v1", "acc_v1", "var50_v1"]
 CHART_DIR = HERE.parent.parent / "charts"
 CORRECT = {"OK", "OK_FMT"}
 
@@ -262,6 +262,8 @@ def chart_glm_luna():
         m = re.fullmatch(r"data_(\d+)_(?:50|60)\.jsonl", name)
         if not m or "data_v4" not in run["file"] or run.get("variant", "ordered") != "ordered" or run["model"] not in series:
             continue
+        if f.parent.name == "var50_v1":   # repeat run; the published chart uses the first 50-step run
+            continue
         rows = [r for r in rows if r["idx"] < 50]
         pts[run["model"]][int(m.group(1))] = (sum(r["status"] in CORRECT for r in rows), len(rows))
 
@@ -299,6 +301,59 @@ def chart_glm_luna():
     return out, dict(pts)
 
 
+def chart_variants():
+    """50 steps, same 50 problems: usual vs pq-split-shuffle vs pq-split-shuffle-nonce, per model."""
+    variants = [("ordered", "usual", BLUE), ("split", "pq-split-shuffle", ORANGE),
+                ("split_nonce", "pq-split-shuffle-nonce", "#1baf7a")]
+    models = {"z-ai/glm-5.3-flash": "GLM 5.3 Flash", "openai/gpt-6-luna": "GPT-6 Luna"}
+    counts = defaultdict(lambda: [0, 0])     # (model, variant) -> [correct, attempted]
+    runs = defaultdict(int)
+    for f, run, rows, summary in load_runs():
+        if f.parent.name not in ("nonce_v1", "var50_v1") or "data_50_60" not in run["file"]:
+            continue
+        v = run.get("variant", "ordered")
+        if run["model"] not in models or v not in [x[0] for x in variants]:
+            continue
+        rows = [r for r in rows if r["idx"] < 50]
+        c = counts[(run["model"], v)]
+        c[0] += sum(r["status"] in CORRECT for r in rows)
+        c[1] += len(rows)
+        runs[(run["model"], v)] += 1
+
+    fig, ax = plt.subplots(figsize=(8, 5.2), facecolor=SURFACE)
+    style_axes(ax)
+    width = 0.16
+    for j, (v, label, color) in enumerate(variants):
+        for i, model in enumerate(models):
+            k, n = counts[(model, v)]
+            y = 100 * k / n
+            lo, hi = wilson(k, n)
+            x = i + (j - 1) * (width + 0.03)
+            ax.bar(x, y, width=width, color=color, edgecolor=SURFACE, linewidth=2, zorder=2,
+                   label=label if i == 0 else None)
+            ax.errorbar(x, y, yerr=[[y - 100 * lo], [100 * hi - y]], fmt="none", ecolor=INK_2,
+                        elinewidth=1, capsize=3, zorder=3)
+            note = f"{k}/{n}" + (f"\n({runs[(model, v)]} runs)" if runs[(model, v)] > 1 else "")
+            ax.text(x, 3, note, ha="center", va="bottom", fontsize=8.5, color="white" if j != 2 else INK,
+                    zorder=4)
+    ax.set_xticks(range(len(models)), list(models.values()), fontsize=11, color=INK)
+    ax.set_xlim(-0.55, len(models) - 0.45)
+    ax.set_ylim(0, 100)
+    ax.set_yticks([0, 25, 50, 75, 100], ["0%", "25%", "50%", "75%", "100%"])
+    ax.legend(loc="upper left", bbox_to_anchor=(0, -0.08), ncol=3, frameon=False, fontsize=9,
+              labelcolor=INK_2, handlelength=1, handleheight=1)
+    fig.suptitle("Same 50 problems (50 steps), three ways of writing them", x=0.01, ha="left",
+                 fontsize=13, color=INK, fontweight="bold")
+    fig.text(0.01, 0.9, "pq-split-shuffle: each day's quantity and price as separate lines, all shuffled · "
+             "nonce: made-up names, items and days\nReasoning effort high · bars = 95% Wilson interval",
+             fontsize=9, color=INK_2, va="top")
+    fig.tight_layout(rect=(0, 0, 1, 0.84))
+    out = CHART_DIR / "variants_50.png"
+    fig.savefig(out, dpi=200, facecolor=SURFACE)
+    plt.close(fig)
+    return out, {k: tuple(v) for k, v in counts.items()}
+
+
 def main():
     CHART_DIR.mkdir(exist_ok=True)
     agg, per_problem = aggregate()
@@ -308,6 +363,8 @@ def main():
     print("wrote", chart_cost_accuracy())
     out, pts = chart_glm_luna()
     print("wrote", out, pts)
+    out, counts = chart_variants()
+    print("wrote", out, counts)
 
 
 if __name__ == "__main__":

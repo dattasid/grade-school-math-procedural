@@ -21,6 +21,15 @@ We see in our analysis that:
 
 We explored with many more models. Most models were very accurate but cost varied radically. Assuming most models are at similar capability, we continued fine grained experiments with cheapest models.
 
+![Problem variations](charts/variants_50.png)
+
+We took the exact same 50 problems, each 50 step long. We made 3 variations of each.
+1. Each row mentions price and quantity for the day: "On day X, price was P_i. Quantity was Q_i."
+2. Each row is 2 lines: "On day X, price was P_i." "On day X, quantity was Q_i.". Then all lines are shuffled. Rows are no longer in order. Price and quantity for same day may be far away.
+3. Same as 2, but all items, and every day, is a made up 5 letter word. Eg: "On Rimug, Tavak bought 300% of as many ratul as Finin." Rimug = nineteenth day, ratul = shoes.
+
+We see that models are barely fazed by 2, but stumble a bit in 3. Note that 50 is still a very low number of samples, which makes the intervals in the chart big.
+
 ## 2024
 From my informal tests, GPT-4 used to mess up even smaller problems. It had a bug where it would confuse `$` for a variable name. This was fixed in GPT 4.1.
 DeepSeek R1 was able to solve big problems pretty well.
@@ -43,7 +52,7 @@ Generate 1 problem with 5 rows, to read from stdout:
 python src/py/generate.py --N 5 --count 1 --dump
 ```
 
-Evaluate a model via [OpenRouter](https://openrouter.ai) (API key in a file named `OR_API_KEY`; logs and cost go to `src/py/runs/`):
+Evaluate a model via [OpenRouter](https://openrouter.ai) (logs and cost go to `src/py/runs/`):
 ```
 python src/py/eval.py file.jsonl -m z-ai/glm-5.3-flash --reasoning-effort high --max-tokens 60000 -b 10
 ```
